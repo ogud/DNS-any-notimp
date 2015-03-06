@@ -51,7 +51,7 @@
       <workgroup>DNSOP</workgroup>
       
       <abstract>
-	<t> DNS ANY query is widely abused for DDoS attacks. This
+	<t> DNS ANY query is widely abused for reflection attacks. This
 	feature was designed to aid in debugging. As there is no good
 	reason for applications to ever issue an ANY query this
 	document codifies how an authoritative server can reject such
@@ -64,17 +64,17 @@
   <section title="Introduction"> 
     <t> DNS is an evolving protocol, at glacial phase, this document
     specifies how an Authorative server can reject an ANY query. ANY
-    queries are widely abused by DDoS attackers as they return the
-    largest answers. Over the years a number of attempts have been
+    queries are widely abused by attackers doing reflection attacks as
+    they return the largest answers. Over the years a number of attempts have been
     made to throttle ANY queries, ranging from returning TC bit to all
     UDP ANY queries, blocking them totally, and QoS'ing the number of
     ANY queires accepted per second. All of those are band-aids. 
     </t> 
     <t> 
-      Some modern Authoritative servers such as those used by CDN's
-      do not have have DNS zones, but know which source to fetch the data
-      from, for those servers answering ANY query truthfully is hard
-      work. Thus not even trying makes life better. 
+      Some modern Authoritative servers, such as those used by CDN's,
+      do not have DNS zones. For those servers answering ANY query
+      truthfully is hard work. Thus ignoring ANY queries simplifies
+      the implementation.
     </t> 
     </section>
     <section title="Requirements notation">
