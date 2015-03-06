@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
+<!ENTITY rfc2119 PUBLIC "" "./reference.RFC.2119.xml">
+]>
+<rfc category="info" docName="draft-ogud-dnsop-any-notimp" ipr="trust200902">
+  <?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
+  <?rfc toc="yes" ?>
+  <?rfc symrefs="yes" ?>
+  <?rfc sortrefs="yes"?>
+  <?rfc iprnotified="no" ?>
+  <?rfc strict="yes"?>
+  <?rfc compact="yes" ?>
+
+  <front>
+    <title abbrev="Refusing ANY query">
+      Standard way for Authoratitive DNS servers to refuse ANY query </title>
+     
+      <author fullname="Olafur Gudmundsson" initials="O." surname="Gudmundsson">
+	<organization>CloudFlare Inc.</organization>
+	<address>
+	  <postal>
+	    <street></street>
+	    <city>San Francisco</city>
+	    <region>CA</region>
+	    <code>94107</code>
+	    <country>USA</country>
+	  </postal>
+	  <email>olafur@cloudflare.com</email>
+	</address>
+      </author>
+
+      <author fullname="Marek Majkowski" initials="M." surname="Majkowski">
+	<organization>CloudFlare Inc.</organization>
+	<address>
+	  <postal>
+	    <street></street>
+	    <city>London</city>
+	    <region></region>
+	    <code></code>
+	    <country>UK</country>
+	  </postal>
+	  <email>marek@cloudflare.com</email>
+	</address>
+      </author>
+
+      <date />
+      
+      <area>Operations</area>
+      
+      <workgroup>DNSOP</workgroup>
+      
+      <abstract>
+	<t> DNS ANY query is widely abused for DDoS attacks. This
+	feature was designed to aid in debugging. As there is no good
+	reason for applications to ever issue an ANY query this
+	document codifies how an authoritative server can reject such
+	queries. 
+	  </t> 
+      </abstract>
+  </front>
+
+  <middle>
+  <section title="Introduction"> 
+    <t> DNS is an evolving protocol, at glacial phase, this document
+    specifies how an Authorative server can reject an ANY query. ANY
+    queries are widely abused by DDoS attackers as they return the
+    largest answers. Over the years a number of attempts have been
+    made to throttle ANY queries, ranging from returning TC bit to all
+    UDP ANY queries, blocking them totally, and QoS'ing the number of
+    ANY queires accepted per second. All of those are band-aids. 
+    </t> 
+    <t> 
+      Some modern Authoritative servers such as those used by CDN's
+      do not have have DNS zones, but know which source to fetch the data
+      from, for those servers answering ANY query truthfully is hard
+      work. Thus not even trying makes life better. 
+    </t> 
+    </section>
+    <section title="Requirements notation">
+      <t>
+	The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+	"SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in
+	this document are to be interpreted as described in
+	<xref target="RFC2119" />.
+      </t>
+    </section> 
+
+    <section title="Protocol change"> 
+      <t> 
+	An Authorative DNS<xref target="RFC1035" /> server can reject ANY query by returning
+	RCODE = 4 (NOTIMP). 
+      </t> 
+      <t> 
+	A Recurisive Resolver SHOULD ignore RD bit set on ANY
+	query. Additionaly as Recursive Resolver SHOULD remember that
+	ANY queries are not available from upstream Auth server, this
+	SHOULD be cached for at least 5 minutes.
+      </t> 
+    </section> 
+  
+  <section title="IANA considerations">
+      <t> No IANA action is requested </t> 
+  </section>
+
+  <section title="Security considerations"> 
+    <t> ANY query is mainly used for attacks on the internet due to
+      its amplification factor. Codifying this behavior makes life
+      harder for attackers, at minimal cost for DNS operators.
+    </t> 
+  </section>
+
+  <section title="Internationalizaiton Considerations"> 
+    <t> NONE</t>
+  </section> 
+
+  <section title="Implementation Experience"> 
+    <t> TBD
+    </t>
+  </section> 
+  </middle>
+  <back>
+    <references title="Normative References">
+      <?rfc include='reference.RFC.1035'?>
+      <?rfc include='reference.RFC.2119'?>
+    </references>
+    
+    <section title="Document history"> 
+      <t>[RFC Editor: Please remove this section before publication ]</t>
+      <t> 00 Initial version </t> 
+    </section>
+  </back>
+</rfc>
