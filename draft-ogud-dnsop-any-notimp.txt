@@ -4,8 +4,9 @@
 
 DNSOP                                                     O. Gudmundsson
 Internet-Draft                                              M. Majkowski
-Intended status: Informational                           CloudFlare Inc.
-Expires: September 07, 2015                               March 06, 2015
+Updates: 1035 (if approved)                              CloudFlare Inc.
+Intended status: Standards Track                           March 6, 2015
+Expires: September 7, 2015
 
 
      Standard way for Authoratitive DNS servers to refuse ANY query
@@ -33,7 +34,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on September 07, 2015.
+   This Internet-Draft will expire on September 7, 2015.
 
 Copyright Notice
 
@@ -52,8 +53,7 @@ Copyright Notice
 
 
 
-
-Gudmundsson & MajkowskiExpires September 07, 2015               [Page 1]
+Gudmundsson & Majkowski Expires September 7, 2015               [Page 1]
 
 Internet-Draft             Refusing ANY query                 March 2015
 
@@ -63,7 +63,7 @@ Table of Contents
    1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
    2.  Requirements notation . . . . . . . . . . . . . . . . . . . .   2
    3.  Protocol change . . . . . . . . . . . . . . . . . . . . . . .   2
-   4.  IANA considerations . . . . . . . . . . . . . . . . . . . . .   2
+   4.  IANA considerations . . . . . . . . . . . . . . . . . . . . .   3
    5.  Security considerations . . . . . . . . . . . . . . . . . . .   3
    6.  Internationalizaiton Considerations . . . . . . . . . . . . .   3
    7.  Implementation Experience . . . . . . . . . . . . . . . . . .   3
@@ -102,17 +102,21 @@ Table of Contents
    are not available from upstream Auth server, this SHOULD be cached
    for at least 5 minutes.
 
-4.  IANA considerations
-
-   No IANA action is requested
 
 
 
 
-Gudmundsson & MajkowskiExpires September 07, 2015               [Page 2]
+
+
+
+Gudmundsson & Majkowski Expires September 7, 2015               [Page 2]
 
 Internet-Draft             Refusing ANY query                 March 2015
 
+
+4.  IANA considerations
+
+   No IANA action is requested
 
 5.  Security considerations
 
@@ -161,8 +165,4 @@ Authors' Addresses
 
 
 
-
-
-
-
-Gudmundsson & MajkowskiExpires September 07, 2015               [Page 3]
+Gudmundsson & Majkowski Expires September 7, 2015               [Page 3]
