@@ -2,7 +2,11 @@
 
 <!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
   <!ENTITY rfc1035 PUBLIC "" "./reference.RFC.1035.xml">
+  <!ENTITY rfc1995 PUBLIC "" "./reference.RFC.1995.xml">
   <!ENTITY rfc2119 PUBLIC "" "./reference.RFC.2119.xml">
+  <!ENTITY rfc2845 PUBLIC "" "./reference.RFC.2845.xml">
+  <!ENTITY rfc3833 PUBLIC "" "./reference.RFC.3833.xml">
+  <!ENTITY rfc4034 PUBLIC "" "./reference.RFC.4034.xml">
   <!ENTITY rfc5358 PUBLIC "" "./reference.RFC.5358.xml">
 ]>
 
@@ -21,7 +25,7 @@
   <front>
     <title abbrev="Refusing DNS Queries of Type ANY">
       Required Behaviour for Authoritative-Only DNS Servers that
-      Refuse Queries with Type ANY
+      Refuse Meta Queries 
     </title>
      
     <author fullname="Olafur Gudmundsson" initials="O." surname="Gudmundsson">
@@ -73,56 +77,72 @@
     <workgroup>DNSOP</workgroup>
       
     <abstract>
-      <t>The DNS ANY query type is widely abused to provide
-        amplification for reflection attacks. The query type was
-        intended as an aid to debugging, and there is no known
-        good reason for an application ever to send such a query
-        for any other reason.</t>
-
-      <t>This document specifies that support for the ANY query type
-        is optional for authoritative-only DNS servers, and describes
-        the required behaviour for authoritative-only DNS servers
-        that are configured to reject such queries.</t>
+      <t> Some DNS types have special meaning and are classified as
+	meta queries, this includes ANY, AXFR, IXFR. 
+	These queries frequently return larger answers than
+	queries for other types. 
+      </t> 
+      <t> This document defines a standard way
+	for Authoritative-Only servers to refuse to serve these
+	queries, with the expectation that resolvers honor that by not
+	asking followup queries. 
+      </t> 
     </abstract>
   </front>
 
   <middle>
     <section title="Introduction"> 
-      <t>The <xref target="RFC1035">DNS specification</xref> includes
-	a meta query-type ANY, intended as an aid to operational
-	troubleshooting. Operational experience has made it clear
-	that legitimate reasons exist for an authoritative-only
-	server not to respond to queries with QTYPE=ANY with
-	conventional answers.</t>
+      <t> The <xref target="RFC1035"> DNS Specification</xref> meta queries where defined for use either zone
+	  maintainance AXFR, full zone transfer,
+	  <xref target="RFC1995">IXFR</xref>, incremental zone transfer. For
+	  security reasons Authoritative name servers only respond to
+	  these queries if a TSIG  <xref target="RFC2845"/>  key is presented or the query comes
+	  from an approved address. 
+      </t> 
+      <t>The ANY meta query was defined for debugging purposes
+	mainly against resolvers. There have been widespread
+	misunderstandigns to what the query is supposed to do and when
+	it is approriate. The query is intented for testing what
+	records for a particular name a resolver has in its cache. 
+	There are security implications related to 
+	information leaks and use in DoS attacks that strongly
+	argue for restricting its use like the other Meta Queries. 
+	</t> 
 
-      <t>Queries with QTYPE=ANY are known to be widely abused by
+      <t> 
+	RRSIG <xref target="RFC4034"/> type used in a query can also
+	return large answers as the server attempts to put all RRSIG
+	records at that one name into one answer. This type was
+	envisioned as deployment tool for validators to overcome
+	resolvers and/or servers that did not understand DNSSEC. 
+	For all practical purposes this is never needed. 
+	</t> 
+
+
+      <t>Queries yielding large answers are known to be widely abused by
         attackers carrying out reflection attacks, since they provide
         a convenient way to elicit large responses from small queries,
         and hence exhibit significant amplification potential. A similar
         reaction to an operational security problem can be observed in
-        the advice contained within <xref target="RFC5358"/>.</t>
+        the advice contained within <xref target="RFC5358"/>.
+      </t>
 
       <t>The data model used by some authoritative-only DNS server
         implementations does not align easily with the zone structure
         described in <xref target="RFC1035"/>, and responding accurately
-        to queries received with QTYPE=ANY involves significant
-        processing overhead. The ability to refuse queries with QTYPE=ANY
+        to meta queries involves significant
+        processing overhead. The ability to refuse meta queries 
         can simplify the implementation with corresponding benefits to
         performance and code correctness.</t>
 
-      <t>Various DNS operators have chosen to refuse queries with
+      <t>Various DNS operators have chosen to refuse various meta queries including
 	QTYPE=ANY in the past, using a variety of approaches,
 	including rate-limiting of queries and responses, returning
-	TC=1 on QTYPE=ANY queries received using UDP transport and
-	silently dropping queries with QTYPE=ANY in the network
+	TC=1 on qeries received via UDP transport and
+	silently dropping queries 
 	before they reach the DNS server.  Consistency in approach
 	would provide a more predictable outcome for DNS clients.</t>
 
-      <t>This document updates the <xref target="RFC1035">DNS
-        specification</xref> to specify that support for the ANY
-        query type is optional for authoritative-only servers,
-        and describes the required behaviour for authoritative-only
-        DNS servers that are configured to reject such queries.</t>
     </section>
 
     <section title="Requirements Notation">
@@ -133,17 +153,27 @@
     </section>
 
     <section title="Protocol Changes">
-      <t>An authoritative-only DNS server MAY reject queries received
-        with QTYPE=ANY by returning RCODE=4 (NOTIMP).</t>
+      <t> DNS processing entities SHOULD support authenticated meta
+      queries, and process them when appropriate. In all other cases
+      the behavior below should be used. The types where this behavior
+      is appropriate includes ANY, AXFR, IXFR, RRSIG. 
+      </t> 
+	
+      <t>An authoritative-only DNS server MAY reject meta queries received
+        by returning RCODE=4 (NOTIMP).
+      </t>
 
       <t>An iterative resolver SHOULD ignore the RD bit set on a
-        query received with QTYPE=ANY.</t>
+        meta query's received, i.e. it SHOULD NOT forward them
+        upstream.
+      </t>
 
       <t>An iterative resolver that sends a query to an authoritative-only
-	DNS server with QTYPE=ANY and receives a response with
-	RCODE=4 SHOULD remember that upstream server's behaviour
-	and suppress any subsequent queries with QTYPE=ANY to the
-	same server for at least five minutes.</t>
+	DNS server and receives a response with
+	RCODE=4 SHOULD remember that upstream server's behaviour, for
+	that type. It should suppress any subsequent qeries for that type to the
+	same server for at least one day (??? better value needed). 
+      </t>
     </section>
 
     <section title="IANA Considerations">
@@ -151,12 +181,24 @@
     </section>
 
     <section title="Security Considerations">
-     <t>DNS queries with QTYPE=ANY are frequently abused as amplifiers
+      <t> In the original Internet where everyone behaved nicely had
+      different secrity and operating model than todays Internet. This
+      document is defining how DNS servers can express that they will
+      never answer a particular query from a given address.
+	RCODE=REFUSED is frequently treated as temporary thus
+      resolver may repeat queries in the hope of getting an answer. 
+      </t> 
+      <t> An on-path attacker<xref target="RFC3833"/> can forge these
+      answers easily, but as that document explains the attacker can
+      anyway inject any lies it wants to. 
+	</t> 
+<!--     <t> DNS queries that return large answers are frequently abused as amplifiers
        for the purposes of carrying out denial-of-service attacks.
        Providing a standard way for authoritative-only DNS servers to
        refuse such queries has the potential to reduce the number of
        amplification vectors available to attackers, at minimal cost
-       to DNS operators.</t>
+       to DNS operators.
+      </t> --> 
     </section>
 
     <section title="Implementation Experience"> 
@@ -164,7 +206,17 @@
     </section> 
 
     <section title="Acknowledgements">
-      <t>Your Name Here.</t>
+      <t> Editors want to thank following people, in random order, for
+	useful feedback: 
+	Paul Vixie, 
+	Tony Finch, 
+	Ralph Weber,
+	Mark Andrews,
+	Stephane Botzmeyer, 
+	Filippo Valsodra,
+	Edward Lewis, 
+	and we forgot someone. 
+      </t>
     </section>
   </middle>
 
@@ -175,6 +227,10 @@
     </references>
 
     <references title="Informative References">
+      &rfc1995;
+      &rfc2845;
+      &rfc3833;
+      &rfc4034;
       &rfc5358;
     </references>
 
@@ -195,6 +251,10 @@
         <section title="draft-ogud-dnsop-any-notimp-01">
           <t>Wordsmithing; add jabley as co-author; normalise
             normative language in protocol changes section.</t>
+	  <t> Based on feeback from dnsop mailing list, we Expaned the scope of the document to cover "META" types
+	  in general, and express that RCODE=NOTIMP should be cached by
+	  resolvers. 
+	    </t> 
         </section>
       </section>
     </section>
