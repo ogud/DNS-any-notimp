@@ -83,8 +83,8 @@
 	queries for other types. 
       </t> 
       <t> This document defines a standard way
-	for Authoritative-Only servers to refuse to serve these
-	queries, with the expectation that resolvers honor that by not
+	for Authoritative-Only servers to refuse to serve these and
+	other similar queries, with the expectation that resolvers honor that, by not
 	asking followup queries. 
       </t> 
     </abstract>
@@ -95,13 +95,13 @@
       <t> The <xref target="RFC1035"> DNS Specification</xref> meta queries where defined for use either zone
 	  maintainance AXFR, full zone transfer,
 	  <xref target="RFC1995">IXFR</xref>, incremental zone transfer. For
-	  security reasons Authoritative name servers only respond to
+	  security reasons Authoritative name servers frequently only respond to
 	  these queries if a TSIG  <xref target="RFC2845"/>  key is presented or the query comes
 	  from an approved address. 
       </t> 
       <t>The ANY meta query was defined for debugging purposes
 	mainly against resolvers. There have been widespread
-	misunderstandigns to what the query is supposed to do and when
+	misunderstanding as to what the query is supposed to do and when
 	it is approriate. The query is intented for testing what
 	records for a particular name a resolver has in its cache. 
 	There are security implications related to 
@@ -117,7 +117,6 @@
 	resolvers and/or servers that did not understand DNSSEC. 
 	For all practical purposes this is never needed. 
 	</t> 
-
 
       <t>Queries yielding large answers are known to be widely abused by
         attackers carrying out reflection attacks, since they provide
@@ -135,6 +134,17 @@
         can simplify the implementation with corresponding benefits to
         performance and code correctness.</t>
 
+      <t>Recursive Resovlers frequently treat REFUSED as a temporary
+      denial. In the case of policy statement that certain queries
+      will not answered, having a more explicit statment is
+      beneficial. There are two chocies as how more permanent
+      semantics can be expressed, reusing an exisiting RCODE or define
+      a new one. This docuemnt proposes reusing the NOTIMP rcode. 
+	This feels like the right choice as as far as the querier is
+      concerned it makes no difference if the meta type is implemented
+      or the authoritative server has no interest in providing that
+      service to the client. 
+      </t> 
       <t>Various DNS operators have chosen to refuse various meta queries including
 	QTYPE=ANY in the past, using a variety of approaches,
 	including rate-limiting of queries and responses, returning
@@ -154,7 +164,8 @@
 
     <section title="Protocol Changes">
       <t> DNS processing entities SHOULD support authenticated meta
-      queries, and process them when appropriate. In all other cases
+      queries, and process them when appropriate as defined by
+      policy. By default support should be disabled. When disabled 
       the behavior below should be used. The types where this behavior
       is appropriate includes ANY, AXFR, IXFR, RRSIG. 
       </t> 
@@ -163,15 +174,20 @@
         by returning RCODE=4 (NOTIMP).
       </t>
 
-      <t>An iterative resolver SHOULD ignore the RD bit set on a
+      <t>An iterative resolver MUST NOT forward a meta-query when the
+	query arrives with RD=0, even when it has no types for that
+	name. 
+	An iterative resolver SHOULD ignore the RD bit set on a
         meta query's received, i.e. it SHOULD NOT forward them
         upstream.
       </t>
 
-      <t>An iterative resolver that sends a query to an authoritative-only
+      <t>
+	An iterative resolver that sends a query to an authoritative
 	DNS server and receives a response with
 	RCODE=4 SHOULD remember that upstream server's behaviour, for
-	that type. It should suppress any subsequent qeries for that type to the
+	that qname, qtype combination. It should suppress any
+	subsequent qeries for that qname, qtype for that
 	same server for at least one day (??? better value needed). 
       </t>
     </section>
@@ -212,7 +228,7 @@
 	Tony Finch, 
 	Ralph Weber,
 	Mark Andrews,
-	Stephane Botzmeyer, 
+	Stephane ortzmeyre, 
 	Filippo Valsodra,
 	Edward Lewis, 
 	and we forgot someone. 
