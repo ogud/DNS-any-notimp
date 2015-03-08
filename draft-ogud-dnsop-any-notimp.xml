@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="US-ASCII"?>
+
 <!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
-<!ENTITY rfc2119 PUBLIC "" "./reference.RFC.2119.xml">
+  <!ENTITY rfc1035 PUBLIC "" "./reference.RFC.1035.xml">
+  <!ENTITY rfc2119 PUBLIC "" "./reference.RFC.2119.xml">
+  <!ENTITY rfc5358 PUBLIC "" "./reference.RFC.5358.xml">
 ]>
-<rfc category="std" docName="draft-ogud-dnsop-any-notimp"
+
+<rfc category="std" docName="draft-ogud-dnsop-any-notimp-01"
      ipr="trust200902" updates="1035">
+
   <?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
+
   <?rfc toc="yes" ?>
   <?rfc symrefs="yes" ?>
   <?rfc sortrefs="yes"?>
@@ -13,121 +19,184 @@
   <?rfc compact="yes" ?>
 
   <front>
-    <title abbrev="Refusing ANY query">
-      Standard way for Authoratitive DNS servers to refuse ANY query </title>
+    <title abbrev="Refusing DNS Queries of Type ANY">
+      Required Behaviour for Authoritative-Only DNS Servers that
+      Refuse Queries with Type ANY
+    </title>
      
-      <author fullname="Olafur Gudmundsson" initials="O." surname="Gudmundsson">
-	<organization>CloudFlare Inc.</organization>
-	<address>
-	  <postal>
-	    <street></street>
-	    <city>San Francisco</city>
-	    <region>CA</region>
-	    <code>94107</code>
-	    <country>USA</country>
-	  </postal>
-	  <email>olafur@cloudflare.com</email>
-	</address>
-      </author>
+    <author fullname="Olafur Gudmundsson" initials="O." surname="Gudmundsson">
+      <organization>CloudFlare Inc.</organization>
+      <address>
+        <postal>
+          <street></street>
+          <city>San Francisco</city>
+          <region>CA</region>
+          <code>94107</code>
+          <country>USA</country>
+        </postal>
+        <email>olafur@cloudflare.com</email>
+      </address>
+    </author>
 
-      <author fullname="Marek Majkowski" initials="M." surname="Majkowski">
-	<organization>CloudFlare Inc.</organization>
-	<address>
-	  <postal>
-	    <street></street>
-	    <city>London</city>
-	    <region></region>
-	    <code></code>
-	    <country>UK</country>
-	  </postal>
-	  <email>marek@cloudflare.com</email>
-	</address>
-      </author>
+    <author fullname="Marek Majkowski" initials="M." surname="Majkowski">
+      <organization>CloudFlare Inc.</organization>
+      <address>
+        <postal>
+          <street></street>
+          <city>London</city>
+          <region></region>
+          <code></code>
+          <country>UK</country>
+        </postal>
+        <email>marek@cloudflare.com</email>
+      </address>
+    </author>
 
-      <date />
+    <author fullname="Joe Abley" initials="J." surname="Abley">
+      <organization>Dyn, Inc.</organization>
+      <address>
+        <postal>
+          <street>103-186 Albert Street</street>
+          <city>London</city>
+          <region>ON</region>
+          <code>N6A 1M1</code>
+          <country>Canada</country>
+        </postal>
+        <email>jabley@dyn.com</email>
+      </address>
+    </author>
+
+    <date />
       
-      <area>Operations</area>
+    <area>Operations</area>
       
-      <workgroup>DNSOP</workgroup>
+    <workgroup>DNSOP</workgroup>
       
-      <abstract>
-	<t> DNS ANY query is widely abused for reflection attacks. This
-	feature was designed to aid in debugging. As there is no good
-	reason for applications to ever issue an ANY query this
-	document codifies how an authoritative server can reject such
-	queries. 
-	  </t> 
-      </abstract>
+    <abstract>
+      <t>The DNS ANY query type is widely abused to provide
+        amplification for reflection attacks. The query type was
+        intended as an aid to debugging, and there is no known
+        good reason for an application ever to send such a query
+        for any other reason.</t>
+
+      <t>This document specifies that support for the ANY query type
+        is optional for authoritative-only DNS servers, and describes
+        the required behaviour for authoritative-only DNS servers
+        that are configured to reject such queries.</t>
+    </abstract>
   </front>
 
   <middle>
-  <section title="Introduction"> 
-    <t> DNS is an evolving protocol, at glacial phase, this document
-    specifies how an Authorative server can reject an ANY query. ANY
-    queries are widely abused by attackers doing reflection attacks as
-    they return the largest answers. Over the years a number of attempts have been
-    made to throttle ANY queries, ranging from returning TC bit to all
-    UDP ANY queries, blocking them totally, and QoS'ing the number of
-    ANY queires accepted per second. All of those are band-aids. 
-    </t> 
-    <t> 
-      Some modern Authoritative servers, such as those used by CDN's,
-      do not have DNS zones. For those servers answering ANY query
-      truthfully is hard work. Thus ignoring ANY queries simplifies
-      the implementation.
-    </t> 
+    <section title="Introduction"> 
+      <t>The <xref target="RFC1035">DNS specification</xref> includes
+	a meta query-type ANY, intended as an aid to operational
+	troubleshooting. Operational experience has made it clear
+	that legitimate reasons exist for an authoritative-only
+	server not to respond to queries with QTYPE=ANY with
+	conventional answers.</t>
+
+      <t>Queries with QTYPE=ANY are known to be widely abused by
+        attackers carrying out reflection attacks, since they provide
+        a convenient way to elicit large responses from small queries,
+        and hence exhibit significant amplification potential. A similar
+        reaction to an operational security problem can be observed in
+        the advice contained within <xref target="RFC5358"/>.</t>
+
+      <t>The data model used by some authoritative-only DNS server
+        implementations does not align easily with the zone structure
+        described in <xref target="RFC1035"/>, and responding accurately
+        to queries received with QTYPE=ANY involves significant
+        processing overhead. The ability to refuse queries with QTYPE=ANY
+        can simplify the implementation with corresponding benefits to
+        performance and code correctness.</t>
+
+      <t>Various DNS operators have chosen to refuse queries with
+	QTYPE=ANY in the past, using a variety of approaches,
+	including rate-limiting of queries and responses, returning
+	TC=1 on QTYPE=ANY queries received using UDP transport and
+	silently dropping queries with QTYPE=ANY in the network
+	before they reach the DNS server.  Consistency in approach
+	would provide a more predictable outcome for DNS clients.</t>
+
+      <t>This document updates the <xref target="RFC1035">DNS
+        specification</xref> to specify that support for the ANY
+        query type is optional for authoritative-only servers,
+        and describes the required behaviour for authoritative-only
+        DNS servers that are configured to reject such queries.</t>
     </section>
-    <section title="Requirements notation">
-      <t>
-	The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
-	"SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in
-	this document are to be interpreted as described in
-	<xref target="RFC2119" />.
-      </t>
+
+    <section title="Requirements Notation">
+      <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL",
+	"SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY",
+	and "OPTIONAL" in this document are to be interpreted as
+	described in <xref target="RFC2119"/>.</t>
+    </section>
+
+    <section title="Protocol Changes">
+      <t>An authoritative-only DNS server MAY reject queries received
+        with QTYPE=ANY by returning RCODE=4 (NOTIMP).</t>
+
+      <t>An iterative resolver SHOULD ignore the RD bit set on a
+        query received with QTYPE=ANY.</t>
+
+      <t>An iterative resolver that sends a query to an authoritative-only
+	DNS server with QTYPE=ANY and receives a response with
+	RCODE=4 SHOULD remember that upstream server's behaviour
+	and suppress any subsequent queries with QTYPE=ANY to the
+	same server for at least five minutes.</t>
+    </section>
+
+    <section title="IANA Considerations">
+      <t>No actions are requested of the IANA.</t>
+    </section>
+
+    <section title="Security Considerations">
+     <t>DNS queries with QTYPE=ANY are frequently abused as amplifiers
+       for the purposes of carrying out denial-of-service attacks.
+       Providing a standard way for authoritative-only DNS servers to
+       refuse such queries has the potential to reduce the number of
+       amplification vectors available to attackers, at minimal cost
+       to DNS operators.</t>
+    </section>
+
+    <section title="Implementation Experience"> 
+      <t>TBD</t>
     </section> 
 
-    <section title="Protocol change"> 
-      <t> 
-	An Authorative DNS<xref target="RFC1035" /> server can reject ANY query by returning
-	RCODE = 4 (NOTIMP). 
-      </t> 
-      <t> 
-	A Recurisive Resolver SHOULD ignore RD bit set on ANY
-	query. Additionaly as Recursive Resolver SHOULD remember that
-	ANY queries are not available from upstream Auth server, this
-	SHOULD be cached for at least 5 minutes.
-      </t> 
-    </section> 
-  
-  <section title="IANA considerations">
-      <t> No IANA action is requested </t> 
-  </section>
-
-  <section title="Security considerations"> 
-    <t> ANY query is mainly used for attacks on the internet due to
-      its amplification factor. Codifying this behavior makes life
-      harder for attackers, at minimal cost for DNS operators.
-    </t> 
-  </section>
-
-  <section title="Internationalizaiton Considerations"> 
-    <t> NONE</t>
-  </section> 
-
-  <section title="Implementation Experience"> 
-    <t> TBD
-    </t>
-  </section> 
+    <section title="Acknowledgements">
+      <t>Your Name Here.</t>
+    </section>
   </middle>
+
   <back>
     <references title="Normative References">
-      <?rfc include='reference.RFC.1035'?>
-      <?rfc include='reference.RFC.2119'?>
+      &rfc1035;
+      &rfc2119;
     </references>
-    
+
+    <references title="Informative References">
+      &rfc5358;
+    </references>
+
     <section title="Document history"> 
-      <t>[RFC Editor: Please remove this section before publication ]</t>
-      <t> 00 Initial version </t> 
+      <t>This section (and sub-sections) should be removed before
+        publication.</t>
+
+      <section title="Venue">
+        <t>An appropriate venue to discuss this draft is the dnsop
+          working group mailing list.</t>
+      </section>
+
+      <section title="Abridged Revision History">
+        <section title="draft-ogud-dnsop-any-notimp-00">
+          <t>Initial draft.</t>
+        </section>
+
+        <section title="draft-ogud-dnsop-any-notimp-01">
+          <t>Wordsmithing; add jabley as co-author; normalise
+            normative language in protocol changes section.</t>
+        </section>
+      </section>
     </section>
   </back>
 </rfc>
