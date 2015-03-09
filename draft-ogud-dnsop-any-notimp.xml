@@ -93,7 +93,7 @@
   <middle>
     <section title="Introduction"> 
       <t> The <xref target="RFC1035"> DNS Specification</xref> meta queries where defined for use either zone
-	  maintainance AXFR, full zone transfer,
+	  maintenance AXFR, full zone transfer,
 	  <xref target="RFC1995">IXFR</xref>, incremental zone transfer. For
 	  security reasons Authoritative name servers frequently only respond to
 	  these queries if a TSIG  <xref target="RFC2845"/>  key is presented or the query comes
@@ -102,7 +102,7 @@
       <t>The ANY meta query was defined for debugging purposes
 	mainly against resolvers. There have been widespread
 	misunderstanding as to what the query is supposed to do and when
-	it is approriate. The query is intented for testing what
+	it is appropriate. The query is intended for testing what
 	records for a particular name a resolver has in its cache. 
 	There are security implications related to 
 	information leaks and use in DoS attacks that strongly
@@ -134,21 +134,21 @@
         can simplify the implementation with corresponding benefits to
         performance and code correctness.</t>
 
-      <t>Recursive Resovlers frequently treat REFUSED as a temporary
+      <t>Recursive Resolvers frequently treat REFUSED as a temporary
       denial. In the case of policy statement that certain queries
-      will not answered, having a more explicit statment is
-      beneficial. There are two chocies as how more permanent
-      semantics can be expressed, reusing an exisiting RCODE or define
-      a new one. This docuemnt proposes reusing the NOTIMP rcode. 
-	This feels like the right choice as as far as the querier is
-      concerned it makes no difference if the meta type is implemented
+      will not answered, having a more explicit statement is
+      beneficial. There are two choices as how more permanent
+      semantics can be expressed, reusing an existing RCODE or define
+      a new one. This document proposes reusing the NOTIMP rcode. 
+	This feels like the right choice as far as the querier is
+      concerned. It makes no difference if the meta type is implemented
       or the authoritative server has no interest in providing that
       service to the client. 
       </t> 
       <t>Various DNS operators have chosen to refuse various meta queries including
 	QTYPE=ANY in the past, using a variety of approaches,
 	including rate-limiting of queries and responses, returning
-	TC=1 on qeries received via UDP transport and
+	TC=1 on queries received via UDP transport and
 	silently dropping queries 
 	before they reach the DNS server.  Consistency in approach
 	would provide a more predictable outcome for DNS clients.</t>
@@ -187,8 +187,8 @@
 	DNS server and receives a response with
 	RCODE=4 SHOULD remember that upstream server's behaviour, for
 	that qname, qtype combination. It should suppress any
-	subsequent qeries for that qname, qtype for that
-	same server for at least one day (??? better value needed). 
+	subsequent queries for that qname, qtype for that
+	same server for at least one hour.
       </t>
     </section>
 
@@ -198,7 +198,7 @@
 
     <section title="Security Considerations">
       <t> In the original Internet where everyone behaved nicely had
-      different secrity and operating model than todays Internet. This
+      different security and operating model than modern Internet. This
       document is defining how DNS servers can express that they will
       never answer a particular query from a given address.
 	RCODE=REFUSED is frequently treated as temporary thus
@@ -228,10 +228,9 @@
 	Tony Finch, 
 	Ralph Weber,
 	Mark Andrews,
-	Stephane ortzmeyre, 
-	Filippo Valsodra,
-	Edward Lewis, 
-	and we forgot someone. 
+	Stephane Ortzmeyre, 
+	Filippo Valsodra and
+	Edward Lewis.
       </t>
     </section>
   </middle>
